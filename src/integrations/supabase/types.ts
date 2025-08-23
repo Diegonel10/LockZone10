@@ -14,7 +14,78 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      picks: {
+        Row: {
+          confidence: number
+          created_at: string
+          created_by: string | null
+          game: string
+          id: string
+          is_premium: boolean
+          match_time: string
+          odds: string
+          pick: string
+          reasoning: string
+          sport: string
+          updated_at: string
+        }
+        Insert: {
+          confidence: number
+          created_at?: string
+          created_by?: string | null
+          game: string
+          id?: string
+          is_premium?: boolean
+          match_time: string
+          odds: string
+          pick: string
+          reasoning: string
+          sport: string
+          updated_at?: string
+        }
+        Update: {
+          confidence?: number
+          created_at?: string
+          created_by?: string | null
+          game?: string
+          id?: string
+          is_premium?: boolean
+          match_time?: string
+          odds?: string
+          pick?: string
+          reasoning?: string
+          sport?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          is_premium: boolean
+          role: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id: string
+          is_premium?: boolean
+          role?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          is_premium?: boolean
+          role?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
