@@ -1,21 +1,58 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Header } from '@/components/Header';
 import { PickCard } from '@/components/PickCard';
 import { AdModal } from '@/components/AdModal';
 import { PremiumModal } from '@/components/PremiumModal';
+import { AdminPanel } from '@/components/AdminPanel';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { TrendingUp, Zap, Star, Target } from 'lucide-react';
 import { mockPicks } from '@/data/mockPicks';
 import { usePremium } from '@/contexts/PremiumContext';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
+import { Pick } from '@/components/PickCard';
 
 const Index = () => {
   const { isPremium, showUpgradeModal, setShowUpgradeModal } = usePremium();
+  const { user, isAdmin, loading } = useAuth();
   const [showAdModal, setShowAdModal] = useState(false);
   const [unlockedPicks, setUnlockedPicks] = useState<Set<string>>(new Set());
+  const [picks, setPicks] = useState<Pick[]>([]);
+  const [showAdmin, setShowAdmin] = useState(false);
 
-  const freePicks = mockPicks.filter(pick => !pick.isPremium);
-  const premiumPicks = mockPicks.filter(pick => pick.isPremium);
+  useEffect(() => {
+    fetchPicks();
+  }, []);
+
+  const fetchPicks = async () => {
+    const { data, error } = await supabase
+      .from('picks')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (data) {
+      // Transform database picks to match component interface
+      const transformedPicks = data.map(pick => ({
+        id: pick.id,
+        sport: pick.sport,
+        game: pick.game,
+        pick: pick.pick,
+        odds: pick.odds,
+        confidence: pick.confidence,
+        reasoning: pick.reasoning,
+        isPremium: pick.is_premium,
+        matchTime: pick.match_time
+      }));
+      setPicks(transformedPicks);
+    } else {
+      // Fallback to mock data if no database data
+      setPicks(mockPicks);
+    }
+  };
+
+  const freePicks = picks.filter(pick => !pick.isPremium);
+  const premiumPicks = picks.filter(pick => pick.isPremium);
 
   const handleUnlockPick = (pickId: string) => {
     setShowAdModal(true);
@@ -35,12 +72,41 @@ const Index = () => {
     return isPremium || unlockedPicks.has(pickId);
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Cargando...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
       
-      {/* Hero Section */}
-      <section className="container mx-auto px-4 py-12">
+      {/* Admin Panel Toggle */}
+      {isAdmin && (
+        <div className="container mx-auto px-4 pt-4">
+          <button
+            onClick={() => setShowAdmin(!showAdmin)}
+            className="text-accent hover:text-accent-foreground font-medium"
+          >
+            {showAdmin ? '← Volver a Picks' : '⚙️ Panel de Admin'}
+          </button>
+        </div>
+      )}
+
+      {isAdmin && showAdmin ? (
+        <div className="container mx-auto px-4 py-8">
+          <AdminPanel />
+        </div>
+      ) : (
+        <>
+          {/* Hero Section */}
+          <section className="container mx-auto px-4 py-12">
         <div className="text-center space-y-6 max-w-3xl mx-auto">
           <div className="space-y-4">
             <Badge variant="outline" className="border-accent text-accent bg-accent/10">
@@ -159,6 +225,8 @@ const Index = () => {
           </section>
         )}
       </div>
+        </>
+      )}
 
       {/* Modals */}
       <AdModal 

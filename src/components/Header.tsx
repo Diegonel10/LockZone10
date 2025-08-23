@@ -1,11 +1,15 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Crown, TrendingUp, Menu } from 'lucide-react';
+import { Crown, TrendingUp, Menu, LogOut, User } from 'lucide-react';
 import { usePremium } from '@/contexts/PremiumContext';
+import { useAuth } from '@/hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
 
 export const Header: React.FC = () => {
   const { isPremium, setShowUpgradeModal } = usePremium();
+  const { user, signOut, profile } = useAuth();
+  const navigate = useNavigate();
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border glass-effect">
@@ -22,22 +26,52 @@ export const Header: React.FC = () => {
             </div>
           </div>
 
-          {/* Premium Status / Upgrade Button */}
+          {/* Auth & Premium Status */}
           <div className="flex items-center gap-3">
-            {isPremium ? (
-              <Badge variant="outline" className="border-premium text-premium bg-premium/10">
-                <Crown className="w-3 h-3 mr-1" />
-                Premium
-              </Badge>
+            {user ? (
+              <>
+                {profile?.role === 'admin' && (
+                  <Badge variant="outline" className="border-accent text-accent bg-accent/10">
+                    <User className="w-3 h-3 mr-1" />
+                    Admin
+                  </Badge>
+                )}
+                
+                {isPremium ? (
+                  <Badge variant="outline" className="border-premium text-premium bg-premium/10">
+                    <Crown className="w-3 h-3 mr-1" />
+                    Premium
+                  </Badge>
+                ) : (
+                  <Button
+                    onClick={() => setShowUpgradeModal(true)}
+                    variant="outline"
+                    size="sm"
+                    className="border-accent text-accent hover:bg-accent hover:text-accent-foreground"
+                  >
+                    <Crown className="w-4 h-4 mr-1" />
+                    Hazte Premium
+                  </Button>
+                )}
+                
+                <Button
+                  onClick={signOut}
+                  variant="ghost"
+                  size="sm"
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  <LogOut className="w-4 h-4" />
+                </Button>
+              </>
             ) : (
               <Button
-                onClick={() => setShowUpgradeModal(true)}
+                onClick={() => navigate('/auth')}
                 variant="outline"
                 size="sm"
                 className="border-accent text-accent hover:bg-accent hover:text-accent-foreground"
               >
-                <Crown className="w-4 h-4 mr-1" />
-                Hazte Premium
+                <User className="w-4 h-4 mr-1" />
+                Iniciar Sesión
               </Button>
             )}
             
