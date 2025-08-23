@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
 
 interface PremiumContextType {
   isPremium: boolean;
@@ -22,30 +21,30 @@ export const usePremium = () => {
 export const PremiumProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isPremium, setIsPremium] = useState<boolean>(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-  const { user, profile } = useAuth();
 
-  // Load premium status from profile or localStorage
+  // Load premium status from localStorage on mount
   useEffect(() => {
-    if (user && profile) {
-      setIsPremium(profile.is_premium);
-    } else {
-      const savedPremiumStatus = localStorage.getItem('isPremium');
-      if (savedPremiumStatus === 'true') {
-        setIsPremium(true);
-      }
+    const savedPremiumStatus = localStorage.getItem('isPremium');
+    if (savedPremiumStatus === 'true') {
+      setIsPremium(true);
     }
-  }, [user, profile]);
+  }, []);
 
   const setPremium = async (value: boolean) => {
     setIsPremium(value);
     localStorage.setItem('isPremium', value.toString());
     
-    // Update database if user is logged in
-    if (user) {
-      await supabase
-        .from('profiles')
-        .update({ is_premium: value })
-        .eq('id', user.id);
+    // Try to update database if user is logged in
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        await supabase
+          .from('profiles')
+          .update({ is_premium: value })
+          .eq('id', session.user.id);
+      }
+    } catch (error) {
+      console.log('Could not update premium status in database:', error);
     }
   };
 
