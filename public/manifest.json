@@ -1,0 +1,52 @@
+{
+  "name": "PicksPro - Picks Deportivos",
+  "short_name": "PicksPro",
+  "description": "Los mejores picks deportivos con análisis profesional",
+  "theme_color": "#22c55e",
+  "background_color": "#141414",
+  "display": "standalone",
+  "scope": "/",
+  "start_url": "/",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png", 
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-maskable-192.png",
+      "sizes": "192x192", 
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png", 
+      "purpose": "maskable"
+    }
+  ],
+  "categories": ["sports", "entertainment", "productivity"],
+  "screenshots": [
+    {
+      "src": "/screenshot-narrow.png",
+      "sizes": "640x1136",
+      "type": "image/png",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "/screenshot-wide.png", 
+      "sizes": "1024x768",
+      "type": "image/png",
+      "form_factor": "wide"
+    }
+  ]
+}
