@@ -21,13 +21,20 @@ export const AdSenseAd: React.FC<AdSenseAdProps> = ({
 
   useEffect(() => {
     try {
+      console.log('AdSense: Checking if adsbygoogle is available...');
+      console.log('Window object:', typeof window);
+      console.log('AdSense script loaded:', !!(window as any).adsbygoogle);
+      
       // Check if AdSense is available
       if (typeof window !== 'undefined' && (window as any).adsbygoogle) {
+        console.log('AdSense: Pushing ad to queue...');
         // Push the ad to AdSense
         ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
+        console.log('AdSense: Ad pushed successfully');
         onAdLoaded?.();
       } else {
         // AdSense not loaded, fallback
+        console.warn('AdSense: Script not available, using fallback');
         onAdFailed?.();
       }
     } catch (error) {
