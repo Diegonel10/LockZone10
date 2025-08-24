@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Play, CheckCircle } from 'lucide-react';
+import { Play, CheckCircle, AlertTriangle } from 'lucide-react';
+import { AdSenseAd } from './AdSenseAd';
 
 interface AdModalProps {
   isOpen: boolean;
@@ -11,17 +12,27 @@ interface AdModalProps {
 }
 
 export const AdModal: React.FC<AdModalProps> = ({ isOpen, onClose, onAdComplete }) => {
-  const [adPhase, setAdPhase] = useState<'waiting' | 'playing' | 'completed'>('waiting');
+  const [adPhase, setAdPhase] = useState<'waiting' | 'playing' | 'completed' | 'fallback'>('waiting');
   const [countdown, setCountdown] = useState(30);
   const [progress, setProgress] = useState(0);
+  const [adLoaded, setAdLoaded] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
       setAdPhase('waiting');
       setCountdown(30);
       setProgress(0);
+      setAdLoaded(false);
     }
   }, [isOpen]);
+
+  const handleAdLoaded = () => {
+    setAdLoaded(true);
+  };
+
+  const handleAdFailed = () => {
+    setAdPhase('fallback');
+  };
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -79,24 +90,27 @@ export const AdModal: React.FC<AdModalProps> = ({ isOpen, onClose, onAdComplete 
                 <Play className="w-12 h-12 text-primary-foreground" />
               </div>
               <p className="text-muted-foreground">
-                Mira este anuncio de 30 segundos para desbloquear el pick premium
+                Mira este anuncio para desbloquear el pick premium
               </p>
               <Button 
                 onClick={startAd}
                 className="w-full gradient-primary hover:opacity-90 transition-opacity"
               >
-                Iniciar Anuncio
+                Ver Anuncio
               </Button>
             </div>
           )}
 
           {adPhase === 'playing' && (
             <div className="text-center space-y-4">
-              <div className="w-32 h-32 mx-auto bg-secondary rounded-lg flex items-center justify-center border border-border">
-                <div className="text-center">
-                  <div className="text-4xl mb-2">📺</div>
-                  <div className="text-xs text-muted-foreground">Anuncio de Prueba</div>
-                </div>
+              <div className="w-full max-w-md mx-auto">
+                <AdSenseAd 
+                  adSlot="YOUR_AD_SLOT_ID"
+                  width={320}
+                  height={240}
+                  onAdLoaded={handleAdLoaded}
+                  onAdFailed={handleAdFailed}
+                />
               </div>
               
               <div className="space-y-2">
@@ -108,8 +122,30 @@ export const AdModal: React.FC<AdModalProps> = ({ isOpen, onClose, onAdComplete 
               </div>
               
               <p className="text-sm text-muted-foreground">
-                Por favor, mantente en esta pantalla durante el anuncio
+                {adLoaded ? 'Anuncio cargado correctamente' : 'Cargando anuncio...'}
               </p>
+            </div>
+          )}
+
+          {adPhase === 'fallback' && (
+            <div className="text-center space-y-4">
+              <div className="w-24 h-24 mx-auto bg-secondary rounded-full flex items-center justify-center">
+                <AlertTriangle className="w-12 h-12 text-muted-foreground" />
+              </div>
+              <div className="space-y-2">
+                <p className="text-foreground font-medium">
+                  No se pudo cargar el anuncio
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Puedes ver el pick premium sin anuncio esta vez
+                </p>
+              </div>
+              <Button 
+                onClick={handleAdComplete}
+                className="w-full gradient-primary hover:opacity-90 transition-opacity"
+              >
+                Continuar sin Anuncio
+              </Button>
             </div>
           )}
 
