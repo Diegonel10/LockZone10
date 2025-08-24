@@ -45,7 +45,7 @@ export const AdSenseAd: React.FC<AdSenseAdProps> = ({
           width: width ? `${width}px` : '100%',
           height: height ? `${height}px` : 'auto'
         }}
-        data-ad-client="ca-pub-YOUR_PUBLISHER_ID"
+        data-ad-client="ca-pub-9640347463461021"
         data-ad-slot={adSlot}
         data-ad-format={adFormat}
         data-full-width-responsive="true"

@@ -105,7 +105,7 @@ export const AdModal: React.FC<AdModalProps> = ({ isOpen, onClose, onAdComplete 
             <div className="text-center space-y-4">
               <div className="w-full max-w-md mx-auto">
                 <AdSenseAd 
-                  adSlot="YOUR_AD_SLOT_ID"
+                  adSlot="4217212413"
                   width={320}
                   height={240}
                   onAdLoaded={handleAdLoaded}
