@@ -3,6 +3,7 @@ import { Header } from '@/components/Header';
 import { PickCard } from '@/components/PickCard';
 import { AdModal } from '@/components/AdModal';
 import { PremiumModal } from '@/components/PremiumModal';
+import { SubscriptionCard } from '@/components/SubscriptionCard';
 import { AdminPanel } from '@/components/AdminPanel';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -14,7 +15,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Pick } from '@/components/PickCard';
 
 const Index = () => {
-  const { isPremium, showUpgradeModal, setShowUpgradeModal } = usePremium();
+  const { isPremium, showUpgradeModal, setShowUpgradeModal, checkSubscription } = usePremium();
   const { user, isAdmin, loading } = useAuth();
   const [showAdModal, setShowAdModal] = useState(false);
   const [unlockedPicks, setUnlockedPicks] = useState<Set<string>>(new Set());
@@ -204,6 +205,25 @@ const Index = () => {
           </div>
         </section>
 
+        {/* Subscription Section */}
+        {user && (
+          <section>
+            <div className="mb-8">
+              <h2 className="text-3xl font-bold text-foreground mb-2">Tu Suscripción</h2>
+              <p className="text-muted-foreground">
+                Gestiona tu plan premium
+              </p>
+            </div>
+            
+            <div className="max-w-md mx-auto">
+              <SubscriptionCard 
+                isPremium={isPremium} 
+                onSubscriptionChange={() => checkSubscription()}
+              />
+            </div>
+          </section>
+        )}
+
         {/* CTA Section */}
         {!isPremium && (
           <section className="text-center py-16">
@@ -219,7 +239,7 @@ const Index = () => {
                 variant="secondary"
                 className="bg-background text-foreground hover:bg-background/90"
               >
-                Upgrade a Premium - $9.99
+                Upgrade a Premium - $100 MXN/mes
               </Button>
             </div>
           </section>

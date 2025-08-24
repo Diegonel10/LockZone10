@@ -1,9 +1,13 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 
 interface PremiumContextType {
   isPremium: boolean;
-  setPremium: (value: boolean) => void;
+  subscriptionTier: string | null;
+  subscriptionEnd: string | null;
+  isLoading: boolean;
+  checkSubscription: () => Promise<void>;
   showUpgradeModal: boolean;
   setShowUpgradeModal: (value: boolean) => void;
 }
@@ -19,42 +23,64 @@ export const usePremium = () => {
 };
 
 export const PremiumProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [isPremium, setIsPremium] = useState<boolean>(false);
+  const [isPremium, setIsPremium] = useState(false);
+  const [subscriptionTier, setSubscriptionTier] = useState<string | null>(null);
+  const [subscriptionEnd, setSubscriptionEnd] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const { user } = useAuth();
 
-  // Load premium status from localStorage on mount
-  useEffect(() => {
-    const savedPremiumStatus = localStorage.getItem('isPremium');
-    if (savedPremiumStatus === 'true') {
-      setIsPremium(true);
+  const checkSubscription = async () => {
+    if (!user) {
+      setIsPremium(false);
+      setSubscriptionTier(null);
+      setSubscriptionEnd(null);
+      setIsLoading(false);
+      return;
     }
-  }, []);
 
-  const setPremium = async (value: boolean) => {
-    setIsPremium(value);
-    localStorage.setItem('isPremium', value.toString());
-    
-    // Try to update database if user is logged in
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
+      setIsLoading(true);
+      const { data, error } = await supabase.functions.invoke('check-subscription');
+      
+      if (error) throw error;
+      
+      const subscribed = data?.subscribed || false;
+      setIsPremium(subscribed);
+      setSubscriptionTier(data?.subscription_tier || null);
+      setSubscriptionEnd(data?.subscription_end || null);
+      
+      // Update profiles table
+      if (user) {
         await supabase
           .from('profiles')
-          .update({ is_premium: value })
-          .eq('id', session.user.id);
+          .update({ is_premium: subscribed })
+          .eq('id', user.id);
       }
     } catch (error) {
-      console.log('Could not update premium status in database:', error);
+      console.error('Error checking subscription:', error);
+      setIsPremium(false);
+      setSubscriptionTier(null);
+      setSubscriptionEnd(null);
+    } finally {
+      setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    checkSubscription();
+  }, [user]);
 
   return (
     <PremiumContext.Provider 
       value={{ 
         isPremium, 
-        setPremium, 
-        showUpgradeModal, 
-        setShowUpgradeModal 
+        subscriptionTier, 
+        subscriptionEnd, 
+        isLoading, 
+        checkSubscription,
+        showUpgradeModal,
+        setShowUpgradeModal
       }}
     >
       {children}

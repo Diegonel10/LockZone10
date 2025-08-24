@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Check, Crown, Zap, Star, X } from 'lucide-react';
-import { usePremium } from '@/contexts/PremiumContext';
+import { SubscriptionCard } from './SubscriptionCard';
 
 interface PremiumModalProps {
   isOpen: boolean;
@@ -11,16 +11,7 @@ interface PremiumModalProps {
 }
 
 export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose }) => {
-  const { setPremium } = usePremium();
-
-  const handleUpgrade = () => {
-    // Simular pago de Stripe
-    setTimeout(() => {
-      setPremium(true);
-      onClose();
-      // Aquí se integraría con Stripe real
-    }, 1500);
-  };
+  const [isLoading, setIsLoading] = useState(false);
 
   const features = [
     'Todos los picks premium desbloqueados',
@@ -37,7 +28,7 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose }) =
         <DialogHeader>
           <div className="flex items-center justify-between">
             <DialogTitle className="text-center text-2xl font-bold flex items-center gap-2">
-              <Crown className="w-6 h-6 text-premium" />
+              <Crown className="w-6 h-6 text-primary" />
               Hazte Premium
             </DialogTitle>
             <Button variant="ghost" size="sm" onClick={onClose}>
@@ -58,19 +49,6 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose }) =
             </p>
           </div>
 
-          {/* Pricing */}
-          <div className="bg-gradient-primary p-6 rounded-lg text-center space-y-2">
-            <Badge variant="secondary" className="bg-background/20 text-primary-foreground">
-              Oferta de Lanzamiento
-            </Badge>
-            <div className="text-4xl font-bold text-primary-foreground">
-              $9.99
-            </div>
-            <p className="text-primary-foreground/80 text-sm">
-              Pago único • Sin suscripciones
-            </p>
-          </div>
-
           {/* Features */}
           <div className="space-y-3">
             <h4 className="font-semibold text-foreground">Lo que obtienes:</h4>
@@ -86,20 +64,12 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose }) =
             </div>
           </div>
 
-          {/* CTA Button */}
-          <div className="space-y-3">
-            <Button 
-              onClick={handleUpgrade}
-              className="w-full gradient-primary hover:opacity-90 transition-all duration-300 text-lg py-6"
-            >
-              <Zap className="w-5 h-5 mr-2" />
-              Activar Premium Ahora
-            </Button>
-            
-            <p className="text-xs text-center text-muted-foreground">
-              💳 Pago seguro con Stripe • 🔒 Garantía de 30 días
-            </p>
-          </div>
+          {/* Subscription Card */}
+          <SubscriptionCard onSubscriptionChange={onClose} />
+          
+          <p className="text-xs text-center text-muted-foreground">
+            💳 Pago seguro con Stripe • 🔒 Garantía de 30 días
+          </p>
         </div>
       </DialogContent>
     </Dialog>
