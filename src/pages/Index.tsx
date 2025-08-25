@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Header } from '@/components/Header';
 import { PickCard } from '@/components/PickCard';
-import { AdModal } from '@/components/AdModal';
+import { AdSenseAd } from '@/components/AdSenseAd';
 import { PremiumModal } from '@/components/PremiumModal';
 import { AdminPanel } from '@/components/AdminPanel';
 import { Button } from '@/components/ui/button';
@@ -16,8 +16,6 @@ import { Pick } from '@/components/PickCard';
 const Index = () => {
   const { isPremium, showUpgradeModal, setShowUpgradeModal } = usePremium();
   const { user, isAdmin, loading } = useAuth();
-  const [showAdModal, setShowAdModal] = useState(false);
-  const [unlockedPicks, setUnlockedPicks] = useState<Set<string>>(new Set());
   const [picks, setPicks] = useState<Pick[]>([]);
   const [showAdmin, setShowAdmin] = useState(false);
 
@@ -53,24 +51,6 @@ const Index = () => {
 
   const freePicks = picks.filter(pick => !pick.isPremium);
   const premiumPicks = picks.filter(pick => pick.isPremium);
-
-  const handleUnlockPick = (pickId: string) => {
-    setShowAdModal(true);
-    // Store the pick ID to unlock after ad
-    sessionStorage.setItem('pickToUnlock', pickId);
-  };
-
-  const handleAdComplete = () => {
-    const pickId = sessionStorage.getItem('pickToUnlock');
-    if (pickId) {
-      setUnlockedPicks(prev => new Set(prev.add(pickId)));
-      sessionStorage.removeItem('pickToUnlock');
-    }
-  };
-
-  const isPickUnlocked = (pickId: string) => {
-    return isPremium || unlockedPicks.has(pickId);
-  };
 
   if (loading) {
     return (
@@ -163,9 +143,15 @@ const Index = () => {
           </div>
           
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {freePicks.map((pick) => (
+            {freePicks.map((pick, index) => (
               <div key={pick.id} className="animate-slide-up">
                 <PickCard pick={pick} />
+                {/* Show ad after every 2 free picks */}
+                {(index + 1) % 2 === 0 && (
+                  <div className="mt-6">
+                    <AdSenseAd className="w-full" />
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -184,21 +170,21 @@ const Index = () => {
             <p className="text-muted-foreground">
               {isPremium 
                 ? "Acceso completo a todos nuestros picks premium"
-                : "Desbloquea con anuncios o hazte premium para acceso ilimitado"
+                : "Hazte premium para acceso ilimitado"
               }
             </p>
           </div>
           
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {premiumPicks.map((pick) => (
+            {premiumPicks.map((pick, index) => (
               <div key={pick.id} className="animate-slide-up">
-                <PickCard 
-                  pick={{
-                    ...pick,
-                    reasoning: isPickUnlocked(pick.id) ? pick.reasoning : pick.reasoning
-                  }}
-                  onUnlock={() => handleUnlockPick(pick.id)}
-                />
+                <PickCard pick={pick} />
+                {/* Show ad after every premium pick for non-premium users */}
+                {!isPremium && (
+                  <div className="mt-6">
+                    <AdSenseAd className="w-full" />
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -224,17 +210,20 @@ const Index = () => {
             </div>
           </section>
         )}
+        
+        {/* Ad Section for non-premium users */}
+        {!isPremium && (
+          <section className="py-8">
+            <div className="max-w-4xl mx-auto">
+              <AdSenseAd className="w-full" />
+            </div>
+          </section>
+        )}
       </div>
         </>
       )}
 
       {/* Modals */}
-      <AdModal 
-        isOpen={showAdModal}
-        onClose={() => setShowAdModal(false)}
-        onAdComplete={handleAdComplete}
-      />
-      
       <PremiumModal 
         isOpen={showUpgradeModal}
         onClose={() => setShowUpgradeModal(false)}

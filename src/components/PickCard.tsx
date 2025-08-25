@@ -102,16 +102,9 @@ export const PickCard: React.FC<PickCardProps> = ({ pick, onUnlock }) => {
               <div className="bg-locked/20 p-3 rounded-lg border border-locked/30 text-center">
                 <Lock className="w-6 h-6 mx-auto mb-2 text-locked" />
                 <p className="text-locked-foreground text-sm">
-                  Contenido premium bloqueado
+                  Contenido premium - Hazte premium para ver el análisis completo
                 </p>
               </div>
-              <Button
-                onClick={onUnlock}
-                variant="outline"
-                className="w-full border-accent text-accent hover:bg-accent hover:text-accent-foreground"
-              >
-                Ver anuncio para desbloquear pick
-              </Button>
             </div>
           ) : (
             <p className="text-sm text-muted-foreground leading-relaxed">
